@@ -2,21 +2,29 @@
 
 import { COLOURS, initials, type PlayerView, type TeamView } from '@/lib/types';
 
+/**
+ * The Oya mark: a game tile whose "O" is also a speech bubble, because "oya"
+ * is something you call out. Used alone as the app icon.
+ */
+export function Mark({ size = 36 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{ flex: 'none', overflow: 'visible' }}>
+      <g transform="rotate(-6 32 32)">
+        <rect x="5" y="9" width="54" height="54" rx="16" fill="#B8900F" />
+        <rect x="5" y="3" width="54" height="54" rx="16" fill="#FFD23F" />
+        <circle cx="32" cy="29" r="12.5" fill="none" stroke="#15141B" strokeWidth="8.5" />
+        <path d="M19 36 L13.500 49 L27 43.500 Z" fill="#15141B" />
+      </g>
+    </svg>
+  );
+}
+
+/** Mark plus "ya": together they read "Oya". */
 export function Logo({ size = 36 }: { size?: number }) {
   return (
-    <span className="row gap-8">
-      <span
-        aria-hidden="true"
-        style={{ width: size, height: size, borderRadius: size / 3, background: 'var(--yellow)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        <svg width={size * 0.6} height={size * 0.6} viewBox="0 0 24 24">
-          <path
-            fill="#15141B"
-            d="M12 2a3 3 0 0 1 3 3c0 .9-.4 1.7-1 2.2 3 .6 6.5 2.3 6.5 4.3 0 1.2-1.6 1.5-3.5 1.2l2.5 7.3c.2.6-.2 1-.8 1H14.5l-2.5-4-2.5 4H4.8c-.6 0-1-.4-.8-1l2.5-7.3c-1.9.3-3.5 0-3.5-1.2 0-2 3.5-3.7 6.5-4.3-.6-.5-1-1.3-1-2.2a3 3 0 0 1 3-3z"
-          />
-        </svg>
-      </span>
-      <span className="display" style={{ fontSize: size * 0.56 }}>oya</span>
+    <span className="row" role="img" aria-label="Oya" style={{ gap: size * 0.1 }}>
+      <Mark size={size} />
+      <span className="display" aria-hidden="true" style={{ fontSize: size * 0.86, letterSpacing: '-0.05em', lineHeight: 1, paddingBottom: size * 0.06 }}>ya</span>
     </span>
   );
 }

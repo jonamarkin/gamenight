@@ -51,17 +51,18 @@ async function render(node: React.ReactElement, width: number, height: number): 
 }
 
 function Brand({ colour, size = 44 }: { colour: string; size?: number }) {
+  const box = size * 1.5;
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: size * 1.4, height: size * 1.4, borderRadius: size * 0.45, background: colour === INK ? INK : YELLOW }}>
-        <svg width={size * 0.85} height={size * 0.85} viewBox="0 0 24 24">
-          <path
-            fill={colour === INK ? YELLOW : INK}
-            d="M12 2a3 3 0 0 1 3 3c0 .9-.4 1.7-1 2.2 3 .6 6.5 2.3 6.5 4.3 0 1.2-1.6 1.5-3.5 1.2l2.5 7.3c.2.6-.2 1-.8 1H14.500l-2.500-4-2.500 4H4.800c-.6 0-1-.4-.8-1l2.500-7.300c-1.900.3-3.500 0-3.500-1.200 0-2 3.500-3.700 6.500-4.300-.6-.5-1-1.300-1-2.200a3 3 0 0 1 3-3z"
-          />
-        </svg>
-      </div>
-      <div style={{ display: 'flex', marginLeft: size * 0.36, fontFamily: 'Display', fontWeight: 800, fontSize: size, letterSpacing: -1, color: colour }}>oya</div>
+      <svg width={box} height={box} viewBox="0 0 64 64">
+        <g transform="rotate(-6 32 32)">
+          <rect x="5" y="9" width="54" height="54" rx="16" fill={colour === INK ? INK : '#B8900F'} />
+          <rect x="5" y="3" width="54" height="54" rx="16" fill={colour === INK ? '#FFFFFF' : YELLOW} />
+          <circle cx="32" cy="29" r="12.500" fill="none" stroke={INK} strokeWidth="8.500" />
+          <path d="M19 36 L13.500 49 L27 43.500 Z" fill={INK} />
+        </g>
+      </svg>
+      <div style={{ display: 'flex', marginLeft: size * 0.14, fontFamily: 'Display', fontWeight: 800, fontSize: size * 1.3, letterSpacing: -3, lineHeight: 1, color: colour }}>ya</div>
     </div>
   );
 }

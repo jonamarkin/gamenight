@@ -245,7 +245,7 @@ function Lobby({ view, send }: { view: RoomView; send: Send }) {
 
           <p className="error" role="alert">{error}</p>
           <button type="button" className="btn btn-lg btn-mint btn-block push" onClick={() => send('start').then((r) => setError(r.ok ? '' : r.error ?? 'Could not start.'))}>
-            Start {gameName(view.game)}
+            Oya! Start {gameName(view.game)}
           </button>
         </>
       ) : (
@@ -295,7 +295,7 @@ function Final({ view, send }: { view: RoomView; send: Send }) {
       </ol>
       <div className="col gap-10 push">
         {host ? (
-          <button type="button" className="btn btn-lg btn-mint btn-block" onClick={() => send('again')}>Play something else</button>
+          <button type="button" className="btn btn-lg btn-mint btn-block" onClick={() => send('again')}>Oya, another game</button>
         ) : (
           <p className="muted center" style={{ fontWeight: 600 }}>Waiting for the host to pick what is next…</p>
         )}
@@ -365,7 +365,7 @@ export default function PlayerRoom({ view, status, send, serverNow }: Props) {
             <Scores view={view} />
             {host ? (
               <button type="button" className="btn btn-lg btn-inverse btn-block" onClick={() => send('next')}>
-                {last ? 'See final results' : 'Next round'}
+                {last ? 'See final results' : 'Oya, next round'}
               </button>
             ) : (
               <p className="muted center" style={{ fontWeight: 600 }}>Waiting for the host…</p>
