@@ -98,7 +98,95 @@ function ScramblePlay({ view, send }: GameProps) {
   );
 }
 
+function awardedText(view: RoomView): string {
+  const a = view.reveal?.awarded;
+  if (a?.team) return `${view.teams.find((t) => t.id === a.team)?.name ?? 'A team'} got it! +100`;
+  if (a?.pid) return `${byId(view, a.pid)?.name ?? 'Someone'} got it! +100`;
+  return 'Nobody got it this time.';
+}
+
+/** What players see in a host-led round: the puzzle, and a nudge to shout. */
+function ShoutPlay({ view }: { view: RoomView }) {
+  return (
+    <div className="col gap-16" style={{ alignItems: 'center' }}>
+      {view.game === 'scramble' ? (
+        <>
+          <div className="card panel col gap-10 center" style={{ width: '100%', alignItems: 'center' }}>
+            <span className="pill pill-yellow">Clue</span>
+            <h2 className="display" style={{ fontSize: 26, lineHeight: 1.1 }}>{view.pub.clue}</h2>
+          </div>
+          <Word word={view.pub.scrambled ?? ''} />
+        </>
+      ) : (
+        <div className="col gap-12" style={{ width: '100%' }}>
+          <div className="card on-mint col gap-12">
+            <span className="pill pill-ink" style={{ alignSelf: 'flex-start' }}>{view.pub.cat}</span>
+            <h2 className="display" style={{ fontSize: 26, lineHeight: 1.08 }}>{view.pub.q}</h2>
+          </div>
+          {(view.pub.options as string[]).map((text, i) => (
+            <div key={i} className="option"><span className="badge" aria-hidden="true">{'ABCD'[i]}</span>{text}</div>
+          ))}
+        </div>
+      )}
+      <div className="card on-coral col gap-4" style={{ width: '100%' }}>
+        <h2 className="display" style={{ fontSize: 30 }}>Shout it out!</h2>
+        <p style={{ fontWeight: 600 }}>First to call it takes the round. The host has the final say.</p>
+      </div>
+    </div>
+  );
+}
+
+/** The host's remote in a host-led round: the answer, and who to give the points to. */
+export function HostRemote({ view, send }: GameProps) {
+  const [error, setError] = useState('');
+  const answer = view.game === 'scramble' ? String(view.mine.answer ?? '') : `${'ABCD'[view.mine.answer ?? 0]} · ${(view.pub.options as string[])?.[view.mine.answer ?? 0] ?? ''}`;
+  const others = view.players.filter((p) => p.id !== view.you);
+  const award = (payload: unknown) => send('award', payload).then((r) => setError(r.ok ? '' : r.error ?? 'That did not work.'));
+  return (
+    <div className="col gap-12">
+      <div className="card panel col gap-12">
+        <div className="col gap-4">
+          <span className="muted" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em' }}>EVERYONE SEES</span>
+          <span style={{ fontWeight: 600 }}>{view.game === 'scramble' ? `${view.pub.clue} · ${view.pub.scrambled}` : view.pub.q}</span>
+        </div>
+        <div className="col gap-4 on-mint" style={{ padding: '14px 18px', borderRadius: 20 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em' }}>ANSWER · ONLY YOU SEE THIS</span>
+          <span className="display" style={{ fontSize: view.game === 'scramble' ? 40 : 26 }}>{answer}</span>
+        </div>
+      </div>
+      <h2 className="display" style={{ fontSize: 24 }}>Who shouted it first?</h2>
+      {view.teams.length
+        ? view.teams.map((t) => (
+            <button key={t.id} type="button" className="btn btn-lg btn-block" style={{ background: t.colour, color: 'var(--ink)', justifyContent: 'space-between', minHeight: 72 }} onClick={() => award({ team: t.id })}>
+              {t.name}
+              <span className="pill pill-ink" style={{ textTransform: 'none', letterSpacing: 0, fontSize: 14 }}>+100</span>
+            </button>
+          ))
+        : others.map((p) => (
+            <button key={p.id} type="button" className="option" onClick={() => award({ pid: p.id })}>
+              <Avatar name={p.name} colour={p.colour} size={42} />
+              <span className="grow">{p.name}</span>
+              <span style={{ fontSize: 13 }}>+100</span>
+            </button>
+          ))}
+      <p className="error" role="alert">{error}</p>
+      <button type="button" className="btn btn-ghost btn-block" onClick={() => send('nobody')}>Nobody got it</button>
+    </div>
+  );
+}
+
 function ScrambleReveal({ view }: { view: RoomView }) {
+  if (view.mode === 'host') {
+    return (
+      <div className="col gap-16" style={{ alignItems: 'center' }}>
+        <span className="pill pill-soft">The word was</span>
+        <Word word={view.reveal?.word ?? ''} />
+        <div className={`card col gap-4 ${view.reveal?.awarded ? 'on-mint' : 'panel'}`} style={{ width: '100%' }}>
+          <h2 className="display" style={{ fontSize: 30 }}>{awardedText(view)}</h2>
+        </div>
+      </div>
+    );
+  }
   const solved = view.players.filter((p) => p.done).sort((a, b) => b.gained - a.gained);
   const mine = me(view);
   return (
@@ -163,11 +251,11 @@ function TriviaReveal({ view }: { view: RoomView }) {
         <div key={i} className={`option${i === ok ? ' right' : choice === i ? ' wrong' : ' dim'}`}>
           <span className="badge" aria-hidden="true">{'ABCD'[i]}</span>
           <span className="grow">{text}</span>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>{counts[i] ?? 0}</span>
+          {view.mode !== 'host' && <span style={{ fontSize: 13, fontWeight: 600 }}>{counts[i] ?? 0}</span>}
         </div>
       ))}
       <p className="center" style={{ fontWeight: 700 }}>
-        {choice === null ? 'You did not answer in time.' : choice === ok ? `Correct! +${mine?.gained ?? 0}` : 'Not this time.'}
+        {view.mode === 'host' ? awardedText(view) : choice === null ? 'You did not answer in time.' : choice === ok ? `Correct! +${mine?.gained ?? 0}` : 'Not this time.'}
       </p>
     </div>
   );
@@ -370,6 +458,7 @@ function ActPlay({ view, send }: GameProps) {
   const log: { phrase: string; by: string | null }[] = view.pub.log ?? [];
   const [choosing, setChoosing] = useState(false);
   useEffect(() => setChoosing(false), [view.mine.phrase]);
+  const actorTeam = view.teams.find((t) => t.id === actor?.team);
 
   if (!acting) {
     return (
@@ -380,14 +469,16 @@ function ActPlay({ view, send }: GameProps) {
             {actor && <Avatar name={actor.name} colour={actor.colour} size={56} />}
           </div>
           <h2 className="display" style={{ fontSize: 40, lineHeight: 0.96 }}>{actor?.name ?? 'Someone'} is acting.</h2>
-          <p style={{ fontWeight: 600 }}>Eyes up, phones down. Shout your guesses!</p>
+          <p style={{ fontWeight: 600 }}>
+            {actorTeam ? (actorTeam.id === me(view)?.team ? 'Your team is guessing. Eyes up, shout it out!' : `${actorTeam.name} is guessing. Keep quiet!`) : 'Eyes up, phones down. Shout your guesses!'}
+          </p>
         </div>
         <ActLog view={view} log={log} hidePassed />
       </div>
     );
   }
 
-  const guessers = view.players.filter((p) => p.id !== view.you);
+  const guessers = view.players.filter((p) => p.id !== view.you && !(view.mode === 'host' && p.id === view.hostId));
   return (
     <div className="col gap-12">
       <div className="card on-coral col gap-12">
@@ -409,7 +500,7 @@ function ActPlay({ view, send }: GameProps) {
       ) : (
         <div className="row gap-10">
           <button type="button" className="btn btn-lg btn-ghost grow" onClick={() => send('pass')}>Pass</button>
-          <button type="button" className="btn btn-lg btn-mint grow" onClick={() => setChoosing(true)}>They got it!</button>
+          <button type="button" className="btn btn-lg btn-mint grow" onClick={() => (actorTeam ? send('got') : setChoosing(true))}>They got it!</button>
         </div>
       )}
       <p className="muted center" style={{ fontSize: 14, fontWeight: 600 }}>{log.filter((l) => l.by).length} guessed this turn</p>
@@ -426,7 +517,7 @@ function ActLog({ view, log, hidePassed = false }: { view: RoomView; log: { phra
         <div key={i} className="card panel row between gap-12" style={{ padding: '12px 16px', borderRadius: 20, fontWeight: 600 }}>
           <span>{l.phrase}</span>
           <span className={`pill ${l.by ? 'on-mint' : 'pill-soft'}`} style={{ textTransform: 'none', letterSpacing: 0, fontSize: 13 }}>
-            {l.by ? byId(view, l.by)?.name ?? 'Got it' : 'Passed'}
+            {l.by ? (l.by.startsWith('team:') ? 'Got it' : byId(view, l.by)?.name ?? 'Got it') : 'Passed'}
           </span>
         </div>
       ))}
@@ -451,6 +542,10 @@ function ActReveal({ view }: { view: RoomView }) {
 /* ---------- Switchers ---------- */
 
 export function GamePlay(props: GameProps) {
+  const { view } = props;
+  if (view.mode === 'host' && (view.game === 'scramble' || view.game === 'trivia')) {
+    return view.you === view.hostId ? <HostRemote {...props} /> : <ShoutPlay view={view} />;
+  }
   switch (props.view.game) {
     case 'scramble': return <ScramblePlay {...props} />;
     case 'trivia': return <TriviaPlay {...props} />;

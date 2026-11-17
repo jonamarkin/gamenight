@@ -6,7 +6,7 @@ const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['500', '700',
 const body = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body' });
 
 export const metadata: Metadata = {
-  title: 'GameNight',
+  title: 'Oya',
   description: 'Party games for wherever your people are. Start a room, share the code, play together.',
 };
 

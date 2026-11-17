@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RoomView } from './types';
 
-export type RoomStatus = 'connecting' | 'live' | 'lost' | 'missing' | 'needs-join';
+export type RoomStatus = 'connecting' | 'live' | 'lost' | 'missing' | 'needs-join' | 'removed';
 
-const key = (code: string) => `gamenight:pid:${code}`;
+const key = (code: string) => `oya:pid:${code}`;
 
 export function savePid(code: string, pid: string) {
   try {
@@ -15,13 +15,13 @@ export function savePid(code: string, pid: string) {
 
 export function rememberName(name: string, colour: string) {
   try {
-    localStorage.setItem('gamenight:me', JSON.stringify({ name, colour }));
+    localStorage.setItem('oya:me', JSON.stringify({ name, colour }));
   } catch {}
 }
 
 export function recallName(): { name: string; colour: string } | null {
   try {
-    return JSON.parse(localStorage.getItem('gamenight:me') ?? 'null');
+    return JSON.parse(localStorage.getItem('oya:me') ?? 'null');
   } catch {
     return null;
   }
@@ -57,13 +57,22 @@ export function useRoom(code: string, spectator = false) {
     setStatus('connecting');
     const es = new EventSource(`/api/rooms/${encodeURIComponent(code)}/events${pid ? `?pid=${encodeURIComponent(pid)}` : ''}`);
     es.onmessage = (e) => {
-      const v = JSON.parse(e.data) as RoomView;
+      const raw = JSON.parse(e.data);
+      if (raw.kicked) {
+        es.close();
+        try {
+          localStorage.removeItem(key(code));
+        } catch {}
+        setStatus('removed');
+        return;
+      }
+      const v = raw as RoomView;
       offset.current = v.now - Date.now();
       setView(v);
       setStatus('live');
     };
     es.onerror = () => {
-      setStatus((s) => (s === 'missing' || s === 'needs-join' ? s : 'lost'));
+      setStatus((s) => (s === 'missing' || s === 'needs-join' || s === 'removed' ? s : 'lost'));
       // EventSource retries by itself; find out whether retrying can ever work.
       fetch(`/api/rooms/${encodeURIComponent(code)}${pid ? `?pid=${encodeURIComponent(pid)}` : ''}`)
         .then(async (r) => {

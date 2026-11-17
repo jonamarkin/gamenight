@@ -92,6 +92,18 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   const [gone, setGone] = useState(false);
   const onMissing = useCallback(() => setGone(true), []);
 
+  if (status === 'removed') {
+    return (
+      <main className="wrap" style={{ gap: 20 }}>
+        <Logo />
+        <div className="card on-coral col gap-12">
+          <h1 className="display" style={{ fontSize: 40, lineHeight: 0.96 }}>The host removed you from {code}.</h1>
+          <p style={{ fontWeight: 600 }}>If that was a mistake, ask them to share the room again.</p>
+        </div>
+        <Link href="/" className="btn btn-lg btn-yellow btn-block">Back to the start</Link>
+      </main>
+    );
+  }
   if (gone || status === 'missing') return <Missing code={code} />;
   if (status === 'needs-join') return <JoinForm code={code} onJoined={joined} onMissing={onMissing} />;
   if (!view) {

@@ -7,10 +7,10 @@ import { COLOURS } from '@/lib/types';
 import { recallName, rememberName, savePid } from '@/lib/useRoom';
 
 const TILES: [string, string, string, number][] = [
-  ['G', 'var(--yellow)', 'var(--ink)', -7],
-  ['A', '#fff', 'var(--ink)', 4],
-  ['M', 'var(--violet)', '#fff', -3],
-  ['E', 'var(--coral)', 'var(--ink)', 6],
+  ['O', 'var(--yellow)', 'var(--ink)', -7],
+  ['Y', '#fff', 'var(--ink)', 4],
+  ['A', 'var(--violet)', '#fff', -3],
+  ['!', 'var(--coral)', 'var(--ink)', 6],
 ];
 
 export default function Home() {
@@ -70,7 +70,7 @@ export default function Home() {
       </div>
 
       <div className="col gap-10">
-        <h1 className="display" style={{ fontSize: 42, lineHeight: 0.96, letterSpacing: '-0.04em' }}>Game night, wherever your people are.</h1>
+        <h1 className="display" style={{ fontSize: 42, lineHeight: 0.96, letterSpacing: '-0.04em' }}>Oya, let's play. Wherever your people are.</h1>
         <p className="muted">Start a room, share the code, and play from your phones or up on the big screen.</p>
       </div>
 
@@ -83,7 +83,7 @@ export default function Home() {
       <p className="error" role="alert">{error}</p>
 
       <button type="button" className="btn btn-lg btn-yellow btn-block" disabled={busy} onClick={() => go('/api/rooms')}>
-        Start a game night
+        Start a room
       </button>
 
       <div className="card panel col gap-10">

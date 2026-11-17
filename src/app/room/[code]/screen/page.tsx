@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { Avatar, Logo, TimerBar, sortByScore } from '@/components/ui';
+import { Avatar, Logo, TeamBar, TimerBar, sortByScore } from '@/components/ui';
 import { gameName, type PlayerView, type RoomView } from '@/lib/types';
 import { useCountdown, useRoom } from '@/lib/useRoom';
 
@@ -18,8 +18,11 @@ function BigWord({ word }: { word: string }) {
 }
 
 function Scores({ view }: { view: RoomView }) {
-  const ranked = sortByScore(view.players);
+  const ranked = sortByScore(view.players.filter((p) => !(view.mode === 'host' && p.id === view.hostId)));
+  if (view.mode === 'host' && view.teams.length > 0) return <TeamBar teams={view.teams} big />;
   return (
+    <>
+    <TeamBar teams={view.teams} big />
     <div className="card panel col gap-8 grow" style={{ borderRadius: 36 }}>
       <h2 className="display" style={{ fontSize: 'clamp(20px, 1.7vw, 28px)', fontWeight: 700 }}>Scores</h2>
       {ranked.map((p, i) => (
@@ -31,7 +34,16 @@ function Scores({ view }: { view: RoomView }) {
         </div>
       ))}
     </div>
+    </>
   );
+}
+
+function awardedLine(view: RoomView): string | null {
+  if (view.mode !== 'host' || view.phase !== 'reveal') return null;
+  const a = view.reveal?.awarded;
+  if (a?.team) return `${view.teams.find((t) => t.id === a.team)?.name ?? 'A team'} got there first. +100`;
+  if (a?.pid) return `${byId(view, a.pid)?.name ?? 'Someone'} got there first. +100`;
+  return 'Nobody got it this time.';
 }
 
 function Main({ view }: { view: RoomView }) {
@@ -44,6 +56,8 @@ function Main({ view }: { view: RoomView }) {
         <span className="pill pill-yellow">{playing ? 'Clue' : 'The word was'}</span>
         <h1 className="display" style={{ fontSize: 'clamp(26px, 4vw, 68px)', lineHeight: 1.05 }}>{pub.clue}</h1>
         <BigWord word={playing ? pub.scrambled : reveal?.word ?? ''} />
+        {awardedLine(view) && <p className="display" style={{ fontSize: 'clamp(20px, 2.6vw, 44px)' }}>{awardedLine(view)}</p>}
+        {playing && view.mode === 'host' && <p style={{ fontSize: 'clamp(16px, 1.9vw, 30px)', fontWeight: 700 }}>Shout it out! The host awards the points.</p>}
       </div>
     );
   }
@@ -58,10 +72,12 @@ function Main({ view }: { view: RoomView }) {
             <div key={i} className={`screen-option${!playing ? (i === reveal?.ok ? ' right' : ' dim') : ''}`}>
               <span className="badge" aria-hidden="true">{'ABCD'[i]}</span>
               <span className="grow">{text}</span>
-              {!playing && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(14px, 1.3vw, 22px)', fontWeight: 600 }}>{reveal?.counts?.[i] ?? 0}</span>}
+              {!playing && view.mode !== 'host' && <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(14px, 1.3vw, 22px)', fontWeight: 600 }}>{reveal?.counts?.[i] ?? 0}</span>}
             </div>
           ))}
         </div>
+        {awardedLine(view) && <p className="display" style={{ fontSize: 'clamp(20px, 2.6vw, 44px)' }}>{awardedLine(view)}</p>}
+        {playing && view.mode === 'host' && <p style={{ fontSize: 'clamp(16px, 1.9vw, 30px)', fontWeight: 700 }}>Shout it out! The host awards the points.</p>}
       </div>
     );
   }
@@ -141,12 +157,13 @@ function Main({ view }: { view: RoomView }) {
   const actor = byId(view, pub.actorId);
   const log: { phrase: string; by: string | null }[] = (playing ? pub.log : reveal?.log) ?? [];
   const got = log.filter((l) => l.by);
+  const actorTeam = view.teams.find((t) => t.id === actor?.team);
   return (
     <div className="screen-main on-coral">
       <span className="pill pill-ink" style={{ alignSelf: 'flex-start' }}>No talking</span>
       <h1 className="display screen-h" style={{ lineHeight: 0.92 }}>{playing ? `${actor?.name ?? 'Someone'} is acting.` : `Time! ${got.length} guessed.`}</h1>
       <p style={{ fontSize: 'clamp(18px, 2.2vw, 36px)', fontWeight: 600 }}>
-        {playing ? 'Everyone else, shout it out!' : got.length ? got.map((l) => l.phrase).join(' · ') : 'A tough crowd tonight.'}
+        {playing ? (actorTeam ? `${actorTeam.name}, shout it out!` : 'Everyone else, shout it out!') : got.length ? got.map((l) => l.phrase).join(' · ') : 'A tough crowd tonight.'}
       </p>
       {playing && got.length > 0 && <p style={{ fontSize: 'clamp(16px, 1.6vw, 26px)', fontWeight: 700 }}>{got.length} guessed so far</p>}
     </div>
@@ -177,7 +194,8 @@ export default function ScreenPage({ params }: { params: Promise<{ code: string 
     );
   }
 
-  const ranked = sortByScore(view.players);
+  const ranked = sortByScore(view.players.filter((p) => !(view.mode === 'host' && p.id === view.hostId)));
+  const teamRank = [...view.teams].sort((a, b) => b.score - a.score);
   const label = view.phase === 'lobby' || view.phase === 'final' ? '' : `${view.game === 'act' ? 'Turn' : view.game === 'trivia' ? 'Question' : 'Round'} ${view.round + 1} of ${view.total}`;
 
   return (
@@ -228,7 +246,9 @@ export default function ScreenPage({ params }: { params: Promise<{ code: string 
           <div className="screen-main on-yellow" style={{ justifyContent: 'flex-end' }}>
             <span style={{ fontSize: 'clamp(14px, 1.4vw, 22px)', fontWeight: 700, letterSpacing: '0.08em' }}>{gameName(view.game).toUpperCase()} · {view.total} ROUNDS</span>
             <h1 className="display" style={{ fontSize: 'clamp(44px, 8vw, 132px)', lineHeight: 0.9, letterSpacing: '-0.045em' }}>
-              {ranked.length > 1 && ranked[0].score === ranked[1].score ? 'A tie at the top!' : `${ranked[0]?.name ?? 'Nobody'} takes it!`}
+              {teamRank.length > 0
+                ? teamRank.length > 1 && teamRank[0].score === teamRank[1].score ? 'A tie at the top!' : `${teamRank[0].name} takes it!`
+                : ranked.length > 1 && ranked[0].score === ranked[1].score ? 'A tie at the top!' : `${ranked[0]?.name ?? 'Nobody'} takes it!`}
             </h1>
           </div>
           <div className="screen-side"><Scores view={view} /></div>

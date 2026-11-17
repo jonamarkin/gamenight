@@ -1,6 +1,6 @@
 'use client';
 
-import { COLOURS, initials, type PlayerView } from '@/lib/types';
+import { COLOURS, initials, type PlayerView, type TeamView } from '@/lib/types';
 
 export function Logo({ size = 36 }: { size?: number }) {
   return (
@@ -16,7 +16,7 @@ export function Logo({ size = 36 }: { size?: number }) {
           />
         </svg>
       </span>
-      <span className="display" style={{ fontSize: size * 0.56 }}>gamenight</span>
+      <span className="display" style={{ fontSize: size * 0.56 }}>oya</span>
     </span>
   );
 }
@@ -64,6 +64,24 @@ export function ScoreStrip({ players, you }: { players: PlayerView[]; you: strin
           </span>
           <span>{p.score}</span>
         </span>
+      ))}
+    </div>
+  );
+}
+
+export function TeamBar({ teams, big = false }: { teams: TeamView[]; big?: boolean }) {
+  if (!teams.length) return null;
+  const lead = Math.max(...teams.map((t) => t.score));
+  return (
+    <div className={big ? 'col gap-12' : 'row gap-8'} aria-label="Team scores">
+      {teams.map((t) => (
+        <div key={t.id} className="grow row between gap-8" style={{ background: t.colour, color: 'var(--ink)', borderRadius: big ? 32 : 22, padding: big ? '18px 24px' : '10px 14px' }}>
+          <span className="col" style={{ minWidth: 0 }}>
+            {lead > 0 && t.score === lead && <span style={{ fontSize: big ? 14 : 11, fontWeight: 700, letterSpacing: '0.06em' }}>IN THE LEAD</span>}
+            <span className={big ? 'display' : undefined} style={{ fontSize: big ? 'clamp(18px, 1.8vw, 30px)' : 13, fontWeight: 700 }}>{t.name}</span>
+          </span>
+          <span className="display" style={{ fontSize: big ? 'clamp(30px, 3.2vw, 56px)' : 26 }}>{t.score}</span>
+        </div>
       ))}
     </div>
   );

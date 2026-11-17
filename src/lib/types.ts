@@ -1,5 +1,14 @@
 export type GameId = 'scramble' | 'trivia' | 'ladder' | 'npat' | 'act';
 export type Phase = 'lobby' | 'playing' | 'reveal' | 'final';
+/** 'phones': everyone answers on their own phone. 'host': the host runs the game and awards points. */
+export type Mode = 'phones' | 'host';
+
+export interface TeamView {
+  id: string;
+  name: string;
+  colour: string;
+  score: number;
+}
 
 export interface PlayerView {
   id: string;
@@ -10,6 +19,7 @@ export interface PlayerView {
   gained: number;
   done: boolean;
   connected: boolean;
+  team: string | null;
 }
 
 /** What the server sends each client. `mine` holds that player's private data. */
@@ -26,6 +36,8 @@ export interface RoomView {
   duration: number;
   now: number;
   players: PlayerView[];
+  mode: Mode;
+  teams: TeamView[];
   pub: Record<string, any>;
   mine: Record<string, any>;
   reveal: Record<string, any> | null;
@@ -37,6 +49,12 @@ export const GAMES: { id: GameId; name: string; blurb: string; colour: string }[
   { id: 'ladder', name: 'Word to Word', blurb: 'Turn one word into another, one letter at a time.', colour: '#8FB8FF' },
   { id: 'npat', name: 'Name Place Animal Thing', blurb: 'One letter. Fastest pen wins.', colour: '#FF9FCF' },
   { id: 'act', name: 'Act It Out', blurb: 'No talking. Everyone else guesses.', colour: '#FF6A5C' },
+];
+
+export const TEAM_DEFAULTS = [
+  { id: 'a', name: 'Team Kelewele', colour: '#FFD23F' },
+  { id: 'b', name: 'Team Waakye', colour: '#FF9FCF' },
+  { id: 'c', name: 'Team Jollof', colour: '#8FB8FF' },
 ];
 
 export const COLOURS = ['#FF6A5C', '#FFD23F', '#2ED3A0', '#FF9FCF', '#8FB8FF', '#FFFFFF'];
