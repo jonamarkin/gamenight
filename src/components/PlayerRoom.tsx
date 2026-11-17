@@ -23,7 +23,7 @@ const HOST_LED: GameId[] = ['scramble', 'trivia', 'act'];
 function Header({ view, title }: { view: RoomView; title: string }) {
   return (
     <header className="row between gap-12">
-      <Link href="/" className="icon-btn" aria-label="Leave the room">
+      <Link href="/play" className="icon-btn" aria-label="Leave the room">
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
       </Link>
       <span className="display" style={{ fontSize: 20 }}>{title}</span>

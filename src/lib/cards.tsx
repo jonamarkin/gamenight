@@ -170,3 +170,40 @@ export function inviteCard(view: RoomView, site: string): Promise<Response> {
     630,
   );
 }
+
+/** Landscape card for the site itself: the picture shown when the Oya link is shared. */
+export function siteCard(): Promise<Response> {
+  return render(
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 56, background: GROUND, color: TEXT, fontFamily: 'Body', fontWeight: 600 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Brand colour={TEXT} size={44} />
+        <div style={{ display: 'flex', padding: '12px 26px', borderRadius: 28, background: YELLOW, color: INK, fontSize: 26, fontWeight: 700 }}>Free to play in your browser</div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', width: 620 }}>
+          <div style={{ display: 'flex', fontFamily: 'Display', fontWeight: 800, fontSize: 112, lineHeight: 0.94, letterSpacing: -5 }}>{"Oya, let's play."}</div>
+          <div style={{ display: 'flex', marginTop: 22, fontSize: 34, lineHeight: 1.25, color: MUTED }}>Party games for wherever your people are.</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <div style={{ display: 'flex' }}>
+            <Tile ch="L" bg={YELLOW} rotate={-7} size={92} />
+            <Tile ch="E" bg="#FFFFFF" rotate={4} size={92} />
+            <Tile ch="T" bg={VIOLET} fg="#FFFFFF" rotate={-3} size={92} />
+            <Tile ch="S" bg={CORAL} rotate={6} size={92} />
+          </div>
+          <div style={{ display: 'flex', marginTop: 22 }}>
+            <Tile ch="P" bg={MINT} rotate={5} size={92} />
+            <Tile ch="L" bg="#FFFFFF" rotate={-6} size={92} />
+            <Tile ch="A" bg={PINK} rotate={3} size={92} />
+            <Tile ch="Y" bg={BLUE} rotate={-4} size={92} />
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', fontSize: 26, fontWeight: 700, color: MUTED }}>Scramble · Trivia · Word to Word · Name Place Animal Thing · Act It Out</div>
+    </div>,
+    1200,
+    630,
+  );
+}

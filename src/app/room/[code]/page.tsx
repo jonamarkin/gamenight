@@ -79,7 +79,7 @@ function Missing({ code }: { code: string }) {
         <p style={{ fontWeight: 600 }}>It may have a typo, or the game may have ended.</p>
       </div>
       <p className="muted">Ask the host to share the room again. The link drops you straight in.</p>
-      <Link href="/" className="btn btn-lg btn-yellow btn-block">Back to the start</Link>
+      <Link href="/play" className="btn btn-lg btn-yellow btn-block">Back to the start</Link>
     </main>
   );
 }
@@ -100,7 +100,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
           <h1 className="display" style={{ fontSize: 40, lineHeight: 0.96 }}>The host removed you from {code}.</h1>
           <p style={{ fontWeight: 600 }}>If that was a mistake, ask them to share the room again.</p>
         </div>
-        <Link href="/" className="btn btn-lg btn-yellow btn-block">Back to the start</Link>
+        <Link href="/play" className="btn btn-lg btn-yellow btn-block">Back to the start</Link>
       </main>
     );
   }
